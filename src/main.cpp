@@ -2,6 +2,9 @@
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 
+// Version
+constexpr char version[] = "5.1";
+
 // Callback functions
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -45,6 +48,24 @@ int main() {
     // Registering callback functions
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    /////////////////////////////////////////
+
+    // Triangle
+    float vertices[] = {
+        -0.43301227f, -0.25f, 0.0f,
+         0.43301227f, -0.25f, 0.0f,
+         0.0f, 0.5f, 0.0f
+    };
+
+    /////////////////////////////////////////
+
+    // Vertex Buffer Object (Batch of vertices sent to the GPU)
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // To copy user defined data into the buffer:
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
     // Render loop
     while(!glfwWindowShouldClose(window))
     {
@@ -59,8 +80,6 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-
 
     // Terminate GLFW
     glfwTerminate();
