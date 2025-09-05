@@ -3,7 +3,8 @@
 #include "GLFW/glfw3.h"
 
 // Version
-constexpr char version[] = "5.1";
+const char ver_num[] = "5.2";
+const char ver_name[] = "Vertex shader";
 
 // Callback functions
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
