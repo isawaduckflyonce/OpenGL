@@ -135,6 +135,7 @@ int main() {
     int Lsuccess;
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &Lsuccess);
     if(!Lsuccess) {
+        char infoLog[512];
         glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" <<
         infoLog << std::endl;
