@@ -3,8 +3,8 @@
 #include "GLFW/glfw3.h"
 
 // Version
-const char ver_num[] = "5.4";
-const char ver_name[] = "Fragment shader";
+const char ver_num[] = "5.4.1";
+const char ver_name[] = "Shader program";
 
 // Temporal vertex shader source code
 const char *vertexShaderSource = "#version 330 core\n"
@@ -122,6 +122,33 @@ int main() {
 
         return -1;
     }
+
+    // Shader program creation
+    unsigned int shaderProgram = glCreateProgram();
+
+    // Shader attachment
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    // Checking for linking errors
+    int Lsuccess;
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &Lsuccess);
+    if(!Lsuccess) {
+        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" <<
+        infoLog << std::endl;
+
+        return -1;
+    }
+
+    // Delete shader objects after linking
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    // To use the shader program:
+    glUseProgram(shaderProgram);
+
 
     // Render loop
     while(!glfwWindowShouldClose(window))

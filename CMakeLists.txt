@@ -10,6 +10,7 @@ set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(lib/glfw)
 
 # Find X11 and OpenGL as they are dependencies.
+set(OpenGL_GL_PREFERENCE GLVND)
 find_package(X11 REQUIRED)
 find_package(OpenGL REQUIRED)
 
