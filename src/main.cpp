@@ -3,8 +3,8 @@
 #include "GLFW/glfw3.h"
 
 // Version
-const char ver_num[] = "5.6";
-const char ver_name[] = "Element Buffer Objects";
+const char ver_num[] = "Exercise 2";
+const char ver_name[] = "Creating the same two triangles with different VAOs and VBOs for their data";
 
 // Temporal vertex shader source code
 const char *vertexShaderSource = "#version 330 core\n"
