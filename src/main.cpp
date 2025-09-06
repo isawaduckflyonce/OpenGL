@@ -1,10 +1,11 @@
 #include <iostream>
+#include <cmath>
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 
 // Version
-constexpr char ver_num[] = "6.3";
-constexpr char ver_name[] = "Ins and Outs";
+constexpr char Ver_num[] = "6.4";
+constexpr char Ver_name[] = "Uniforms";
 
 // Temporal vertex shader source code
 const char *vertexShaderSource = "#version 330 core\n"
@@ -18,11 +19,11 @@ const char *vertexShaderSource = "#version 330 core\n"
 
 // Temporal fragment shader source code
 const char *fragmentShaderSource = "#version 330 core\n"
-"in vec4 vertexColor;\n"
+"uniform vec4 ourColor;\n"
 "out vec4 FragColor;\n"
 "void main()\n"
 "{\n"
-"    FragColor = vertexColor;\n"
+"    FragColor = ourColor;\n"
 "}\0";
 
 // Callback functions
@@ -190,8 +191,13 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // To draw, we use the shader program (VAO is already binded)
+        const auto timeValue = (float)glfwGetTime();
+        const float greenValue = (sinf(3*timeValue) / 2.0f) + 0.5f;
+        const int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
         glUseProgram(shaderProgram);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         // Call events and swap buffer
         glfwSwapBuffers(window);
