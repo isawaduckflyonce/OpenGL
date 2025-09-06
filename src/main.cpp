@@ -68,42 +68,57 @@ int main() {
     /////////////////////////////////////////
 
     float vertices[] = {
-        0.5f, 0.5f, 0.0f, // top right
+        0.0f, 0.5f, 0.0f, // top
         0.5f, -0.5f, 0.0f, // bottom right
         -0.5f, -0.5f, 0.0f, // bottom left
-        -0.5f, 0.5f, 0.0f // top left
-        };
-    unsigned int indices[] = { // note that we start from 0!
-        0, 1, 3, // first triangle
-        1, 2, 3 // second triangle
-        };
+    };
+    unsigned int indices[] = {
+        0, 1, 2, // first triangle
+    };
 
     /////////////////////////////////////////
 
-    // 1. Generate and bind the VAO (Vertex Array Object)
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    // 1 - Generate the VAOs, VBOs and EBOs
+    unsigned int VAOs[2], VBOs[2], EBOs[2];
+    glGenVertexArrays(2, VAOs);
+    glGenBuffers(2, VBOs);
+    glGenBuffers(2, EBOs);
 
-    // 2. Generate and bind the VBO (Vertex Buffer Object)
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // 2 - Bindings of the first VAO, VBO and EBO
+    glBindVertexArray(VAOs[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
 
-    // 3. Copy vertex data into the VBO:
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        // 2.1 - Copy vertex data into VBO
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // 4. Set vertex attribute pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+        // 2.2 - Setting the vertex attribute pointers
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
 
-    // 5. Generate and bind EBO (Element Buffer Object)
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        // 2.3 - Binding EBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    // 6. Unbind the VAO, VBO and EBO
+    // 3 - Unbinding the first VAO and VBO
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // 4 - Bindings of the second VAO, VBO and EBO
+    glBindVertexArray(VAOs[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+
+        // 4.1 - Copy vertex data into VBO
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        // 4.2 - Setting the vertex attribute pointers
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        // 4.3 - Binding EBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[1]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // 5 - Unbinding the second VAO and VBO
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -185,11 +200,16 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // To draw, we use the shader program and bind the VAO
+        // To draw, we use the (only) shader program
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+
+        // We bind the first VAO
+        glBindVertexArray(VAOs[0]);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+
+        // We now bind the second VAO
+        glBindVertexArray(VAOs[1]);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 
         // Call events and swap buffer
         glfwSwapBuffers(window);
@@ -197,9 +217,9 @@ int main() {
     }
 
     // Clean up buffers
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    glDeleteVertexArrays(2, VAOs);
+    glDeleteBuffers(2, VBOs);
+    glDeleteBuffers(2, EBOs);
     glDeleteProgram(shaderProgram);
 
     // Terminate GLFW
