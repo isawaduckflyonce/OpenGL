@@ -3,23 +3,26 @@
 #include "GLFW/glfw3.h"
 
 // Version
-const char ver_num[] = "5.6";
-const char ver_name[] = "Element Buffer Objects";
+constexpr char ver_num[] = "6.3";
+constexpr char ver_name[] = "Ins and Outs";
 
 // Temporal vertex shader source code
 const char *vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
+"out vec4 vertexColor;\n"
 "void main()\n"
 "{\n"
-" gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+" gl_Position = vec4(aPos, 1.0);\n"
+" vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
 "}\0";
 
 // Temporal fragment shader source code
 const char *fragmentShaderSource = "#version 330 core\n"
+"in vec4 vertexColor;\n"
 "out vec4 FragColor;\n"
 "void main()\n"
 "{\n"
-"    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"    FragColor = vertexColor;\n"
 "}\0";
 
 // Callback functions
@@ -174,6 +177,7 @@ int main() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    glBindVertexArray(VAO);
 
     // Render loop
     while(!glfwWindowShouldClose(window))
@@ -182,14 +186,12 @@ int main() {
         processInput(window);
 
         // Render commands
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // To draw, we use the shader program and bind the VAO
+        // To draw, we use the shader program (VAO is already binded)
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
 
         // Call events and swap buffer
         glfwSwapBuffers(window);
