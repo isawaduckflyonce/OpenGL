@@ -3,8 +3,8 @@
 #include "GLFW/glfw3.h"
 
 // Version
-const char ver_num[] = "5.4.1";
-const char ver_name[] = "Shader program";
+const char ver_num[] = "5.5";
+const char ver_name[] = "Linking vertex attributes";
 
 // Temporal vertex shader source code
 const char *vertexShaderSource = "#version 330 core\n"
@@ -149,6 +149,15 @@ int main() {
 
     // To use the shader program:
     glUseProgram(shaderProgram);
+
+    // How vertex data should be interpreted
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+
+    // Initialize Vertex Array Object
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
 
 
     // Render loop
