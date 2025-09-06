@@ -3,8 +3,8 @@
 #include "GLFW/glfw3.h"
 
 // Version
-const char ver_num[] = "5.5";
-const char ver_name[] = "Linking vertex attributes";
+const char ver_num[] = "5.5.2";
+const char ver_name[] = "The triangle we've all been waiting for";
 
 // Temporal vertex shader source code
 const char *vertexShaderSource = "#version 330 core\n"
@@ -76,12 +76,27 @@ int main() {
 
     /////////////////////////////////////////
 
-    // Vertex Buffer Object (Batch of vertices sent to the GPU)
+    // 1. Generate and bind the VAO
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    // 2. Generate and bind the VBO
     unsigned int VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // To copy user defined data into the buffer:
+
+    // 3. Copy vertex data into the VBO:
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // 4. Set vertex attribute pointers
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // 5. Unbind the VBO and VAO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
 
     // Vertex shader creation
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -103,6 +118,7 @@ int main() {
         return -1;
     }
 
+
     // Fragment shader creation
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -122,6 +138,7 @@ int main() {
 
         return -1;
     }
+
 
     // Shader program creation
     unsigned int shaderProgram = glCreateProgram();
@@ -147,18 +164,6 @@ int main() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    // To use the shader program:
-    glUseProgram(shaderProgram);
-
-    // How vertex data should be interpreted
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-
-    // Initialize Vertex Array Object
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-
 
     // Render loop
     while(!glfwWindowShouldClose(window))
@@ -169,6 +174,11 @@ int main() {
         // Render commands
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // To draw, we use the shader program and bind the VAO
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // Call events and swap buffer
         glfwSwapBuffers(window);
