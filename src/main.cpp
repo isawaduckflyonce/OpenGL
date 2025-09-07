@@ -3,8 +3,8 @@
 #include "GLFW/glfw3.h"
 
 // Version
-constexpr char Ver_num[] = "6.6";
-constexpr char Ver_name[] = "Our own shader class";
+constexpr char Ver_num[] = "6.7";
+constexpr char Ver_name[] = "Reading from file";
 
 // Temporal vertex shader source code
 const char *vertexShaderSource = "#version 330 core\n"
