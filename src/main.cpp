@@ -112,6 +112,7 @@ int main() {
     glGenTextures(2, textures);
 
     // 2. Load and generate texture data
+    stbi_set_flip_vertically_on_load(true); // So images don't render upside down
     int width[2], height[2], nrChannels[2];
     unsigned char *data[2] = {
         stbi_load("../src/textures/checkered_pavement_tiles/checkered_pavement_tiles_diff_4k.jpg", &width[0], &height[0], &nrChannels[0], 0),
@@ -128,7 +129,7 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // 5. Use the texture 1 (.jpg -> RGB)
+    // 5. Use the texture 1
     if (data[0])
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width[0], height[0], 0, GL_RGB, GL_UNSIGNED_BYTE, data[0]);
@@ -152,9 +153,10 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // 9. Use the texture 2 (.png -> RGBa)
+    // 9. Use the texture 2
     if (data[1])
     {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // To fix skewing (idk)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width[1], height[1], 0, GL_RGB, GL_UNSIGNED_BYTE, data[1]);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
@@ -166,15 +168,12 @@ int main() {
     // 10. Free image 2's memory
     stbi_image_free(data[1]);
 
-
-
-
-
-
+    // Setup shacer
     Shader customShader("../src/shaders/default/default.vert", "../src/shaders/default/default.frag");
     customShader.use();
     customShader.setInt("ourTexture1", 0);
     customShader.setInt("ourTexture2", 1);
+
     glBindVertexArray(VAO);
 
     // Render loop
@@ -188,11 +187,12 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // To draw, we use the shader program (VAO is already binded)
-        //customShader.setFloat("someUniform", 1.0f);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textures[0]);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+        customShader.setFloat("alpha", abs(sinf(glfwGetTime()/3.0f)));
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
