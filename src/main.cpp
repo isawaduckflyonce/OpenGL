@@ -7,8 +7,8 @@
 #include "stb_image.h"
 
 // Version
-constexpr char Ver_num[] = "7.5";
-constexpr char Ver_name[] = "Generating a texture";
+constexpr char Ver_num[] = "7.6";
+constexpr char Ver_name[] = "Applying textures";
 
 
 // Callback functions
@@ -58,20 +58,16 @@ int main() {
     /////////////////////////////////////////
 
     constexpr float vertices[] = {
-        // positions         // colors
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // bottom left
-         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f  // top
+        // positions        // colors         // texture coords
+         0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
     };
 
     constexpr unsigned int indices[] = {
-        0, 1, 2
-    };
-
-    constexpr float texCoords[] = {
-        0.0f, 0.0f, // lower-left corner
-        1.0f, 0.0f, // lower-right corner
-        0.5f, 1.0f // top-center corner
+        0, 1, 3,
+        1, 2, 3
     };
 
     /////////////////////////////////////////
@@ -90,12 +86,15 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // 4. Set vertex attribute pointers
-    // First attribute:
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)nullptr);
+    // First attribute (positions):
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
-    // Second attribute:
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    // Second attribute (colors):
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    // Third attribute (texture coords):
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // 5. Generate and bind EBO (Element Buffer Object)
     unsigned int EBO;
@@ -107,8 +106,6 @@ int main() {
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    Shader customShader("../src/shaders/default/default.vert", "../src/shaders/default/default.frag");
-    glBindVertexArray(VAO);
 
     // Generate and bind texture
     unsigned int texture;
@@ -137,6 +134,11 @@ int main() {
     // Free the image memory
     stbi_image_free(data);
 
+
+    Shader customShader("../src/shaders/default/default.vert", "../src/shaders/default/default.frag");
+    glBindVertexArray(VAO);
+
+
     // Render loop
     while(!glfwWindowShouldClose(window))
     {
@@ -150,7 +152,7 @@ int main() {
         // To draw, we use the shader program (VAO is already binded)
         customShader.use();
         //customShader.setFloat("someUniform", 1.0f);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         // Call events and swap buffer
         glfwSwapBuffers(window);
