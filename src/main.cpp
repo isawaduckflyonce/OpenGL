@@ -9,7 +9,7 @@ constexpr char Ver_name[] = "Reading from file";
 
 
 // Callback functions
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
 {
     glViewport(0, 0, width, height);
 }
@@ -54,14 +54,14 @@ int main() {
 
     /////////////////////////////////////////
 
-    float vertices[] = {
+    constexpr float vertices[] = {
         // positions         // colors
          0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom right
         -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // bottom left
          0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f  // top
     };
 
-    unsigned int indices[] = {
+    constexpr unsigned int indices[] = {
         0, 1, 2
     };
 
@@ -82,7 +82,7 @@ int main() {
 
     // 4. Set vertex attribute pointers
     // First attribute:
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
     // Second attribute:
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
