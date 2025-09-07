@@ -1,11 +1,10 @@
 #include <iostream>
-#include <cmath>
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 
 // Version
-constexpr char Ver_num[] = "6.5";
-constexpr char Ver_name[] = "More attributes!";
+constexpr char Ver_num[] = "6.6";
+constexpr char Ver_name[] = "Our own shader class";
 
 // Temporal vertex shader source code
 const char *vertexShaderSource = "#version 330 core\n"
@@ -48,7 +47,8 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Creating window object:
-    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr);
+    const std::string windowTitle = std::string(Ver_num) + " - " + std::string(Ver_name);
+    GLFWwindow* window = glfwCreateWindow(800, 600, windowTitle.c_str(), nullptr, nullptr);
     if (window == nullptr)
     {
         std::cout << "Failed to create GLFW window" << std::endl;

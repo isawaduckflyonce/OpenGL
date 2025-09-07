@@ -19,7 +19,9 @@ add_library(glad STATIC lib/glad/src/glad.c)
 target_include_directories(glad PUBLIC lib/glad/include)
 
 # Add your executable target, specifying the correct path to your source file.
-add_executable(OpenGL src/main.cpp)
+add_executable(OpenGL src/main.cpp
+        src/include/shader.h
+        src/lib/shader.cpp)
 
 # Link your executable to the necessary static libraries.
 target_link_libraries(OpenGL
