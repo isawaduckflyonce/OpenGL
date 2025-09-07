@@ -107,48 +107,74 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
-    // Generate, activate and bind textures 1 and 2
+    // 1. Generate textures
     unsigned int textures[2];
     glGenTextures(2, textures);
+
+    // 2. Load and generate texture data
+    int width[2], height[2], nrChannels[2];
+    unsigned char *data[2] = {
+        stbi_load("../src/textures/checkered_pavement_tiles/checkered_pavement_tiles_diff_4k.jpg", &width[0], &height[0], &nrChannels[0], 0),
+        stbi_load("../src/textures/sneaky_golem.jpg", &width[1], &height[1], &nrChannels[1], 0)
+    };
+
+    // 3. Activate and bind texture 1
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
 
-    // Set the texture wrapping/filtering options (on currently bound texture)
+    // 4. Set texture 1 parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Load and generate texture 1
-    int width[2], height[2], nrChannels[2];
-    unsigned char *data[2] = {
-        stbi_load("../src/textures/checkered_pavement_tiles/checkered_pavement_tiles_diff_4k.jpg", &width[0], &height[0], &nrChannels[0], 0),
-        stbi_load("../src/textures/sneaky_golem.png", &width[1], &height[1], &nrChannels[1], 0)
-    };
-
-    for (int i = 0; i < 2; i++) {
-        if (data[i])
-        {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width[i], height[i], 0, GL_RGB, GL_UNSIGNED_BYTE, data[i]);
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
-        else
-        {
-            std::cout << "Failed to load texture " + std::to_string(i) << std::endl;
-        }
-
-        // Free the image memory
-        stbi_image_free(data[i]);
+    // 5. Use the texture 1 (.jpg -> RGB)
+    if (data[0])
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width[0], height[0], 0, GL_RGB, GL_UNSIGNED_BYTE, data[0]);
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
+    else
+    {
+        std::cout << "Failed to load texture 1" << std::endl;
+    }
+
+    // 6. Free image 1's memory
+    stbi_image_free(data[0]);
+
+    // 7. Activate and bind texture 2
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+    // 8. Set texture 2 parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // 9. Use the texture 2 (.png -> RGBa)
+    if (data[1])
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width[1], height[1], 0, GL_RGB, GL_UNSIGNED_BYTE, data[1]);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture 2" << std::endl;
+    }
+
+    // 10. Free image 2's memory
+    stbi_image_free(data[1]);
+
+
+
+
 
 
     Shader customShader("../src/shaders/default/default.vert", "../src/shaders/default/default.frag");
     customShader.use();
-    customShader.setInt("texture1", 0);
-    customShader.setInt("texture2", 1);
-
+    customShader.setInt("ourTexture1", 0);
+    customShader.setInt("ourTexture2", 1);
     glBindVertexArray(VAO);
 
     // Render loop
@@ -163,6 +189,11 @@ int main() {
 
         // To draw, we use the shader program (VAO is already binded)
         //customShader.setFloat("someUniform", 1.0f);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textures[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, textures[1]);
+
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         // Call events and swap buffer
@@ -174,6 +205,7 @@ int main() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
+    glDeleteTextures(2, textures);
     //glDeleteProgram(shaderProgram);
 
     // Terminate GLFW
