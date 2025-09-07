@@ -7,8 +7,8 @@
 #include "stb_image.h"
 
 // Version
-constexpr char Ver_num[] = "7.6";
-constexpr char Ver_name[] = "Applying textures";
+constexpr char Ver_num[] = "7.7";
+constexpr char Ver_name[] = "Texture units";
 
 
 // Callback functions
@@ -107,10 +107,13 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
-    // Generate and bind texture
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    // Generate, activate and bind textures 1 and 2
+    unsigned int textures[2];
+    glGenTextures(2, textures);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
 
     // Set the texture wrapping/filtering options (on currently bound texture)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -118,26 +121,35 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Load and generate the texture
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("../src/textures/checkered_pavement_tiles/checkered_pavement_tiles_diff_4k.jpg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
+    // Load and generate texture 1
+    int width[2], height[2], nrChannels[2];
+    unsigned char *data[2] = {
+        stbi_load("../src/textures/checkered_pavement_tiles/checkered_pavement_tiles_diff_4k.jpg", &width[0], &height[0], &nrChannels[0], 0),
+        stbi_load("../src/textures/sneaky_golem.png", &width[1], &height[1], &nrChannels[1], 0)
+    };
 
-    // Free the image memory
-    stbi_image_free(data);
+    for (int i = 0; i < 2; i++) {
+        if (data[i])
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width[i], height[i], 0, GL_RGB, GL_UNSIGNED_BYTE, data[i]);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+        else
+        {
+            std::cout << "Failed to load texture " + std::to_string(i) << std::endl;
+        }
+
+        // Free the image memory
+        stbi_image_free(data[i]);
+    }
 
 
     Shader customShader("../src/shaders/default/default.vert", "../src/shaders/default/default.frag");
-    glBindVertexArray(VAO);
+    customShader.use();
+    customShader.setInt("texture1", 0);
+    customShader.setInt("texture2", 1);
 
+    glBindVertexArray(VAO);
 
     // Render loop
     while(!glfwWindowShouldClose(window))
@@ -150,7 +162,6 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // To draw, we use the shader program (VAO is already binded)
-        customShader.use();
         //customShader.setFloat("someUniform", 1.0f);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
