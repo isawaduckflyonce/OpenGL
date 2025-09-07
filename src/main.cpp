@@ -4,8 +4,8 @@
 #include "shader.h"
 
 // Version
-constexpr char Ver_num[] = "6.7";
-constexpr char Ver_name[] = "Reading from file";
+constexpr char Ver_num[] = "7";
+constexpr char Ver_name[] = "Textures";
 
 
 // Callback functions
@@ -54,15 +54,21 @@ int main() {
 
     /////////////////////////////////////////
 
-    float vertices[] = {
+    constexpr float vertices[] = {
         // positions         // colors
          0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom right
         -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // bottom left
          0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f  // top
     };
 
-    unsigned int indices[] = {
+    constexpr unsigned int indices[] = {
         0, 1, 2
+    };
+
+    constexpr float texCoords[] = {
+        0.0f, 0.0f, // lower-left corner
+        1.0f, 0.0f, // lower-right corner
+        0.5f, 1.0f // top-center corner
     };
 
     /////////////////////////////////////////
