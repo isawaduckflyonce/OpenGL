@@ -38,7 +38,11 @@ target_include_directories(OpenGL
         PRIVATE
         lib/glad/include
         ${glfw_SOURCE_DIR}/include
+        lib/stb_image
+        src
         src/include
+        src/lib
         src/shaders
         src/shaders/default
+        src/textures
 )

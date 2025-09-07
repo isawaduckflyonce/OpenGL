@@ -2,10 +2,11 @@
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 #include "shader.h"
+#include "stb_image.h"
 
 // Version
-constexpr char Ver_num[] = "7";
-constexpr char Ver_name[] = "Textures";
+constexpr char Ver_num[] = "7.4";
+constexpr char Ver_name[] = "stb_image.h";
 
 
 // Callback functions
@@ -88,7 +89,7 @@ int main() {
 
     // 4. Set vertex attribute pointers
     // First attribute:
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
     // Second attribute:
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -106,6 +107,12 @@ int main() {
 
     Shader customShader("../src/shaders/default/default.vert", "../src/shaders/default/default.frag");
     glBindVertexArray(VAO);
+
+
+    // Load texture
+    int width, height, nrChannels;
+    //unsigned char *data = stbi_load("textures/checkered_pavement_tiles/checkered_pavement_tiles_diff_4k.jpg", &width, &height, &nrChannels, 0);
+
 
     // Render loop
     while(!glfwWindowShouldClose(window))
