@@ -23,9 +23,13 @@ constexpr unsigned short int SCR_WIDTH = 800;
 constexpr unsigned short int SCR_HEIGHT = 600;
 
 // Camera
-glm::vec3 cameraPos;
-glm::vec3 cameraFront;
-glm::vec3 cameraUp;
+glm::vec3 cameraPos, cameraFront, cameraUp;
+float pitch = 0.0f;
+float yaw = -90.0f;;
+float mouseLastX = SCR_WIDTH / 2.0f;
+float mouseLastY = SCR_HEIGHT / 2.0f;
+float sensitivity = 0.1f;
+bool firstMouse = true;
 
 // Delta time
 float deltaTime = 0.0f;
@@ -60,6 +64,37 @@ void processInput(GLFWwindow *window)
         cameraPos += cameraSpeed * -cameraUp;
 }
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (firstMouse) {
+        mouseLastX = (float)xpos;
+        mouseLastY = (float)ypos;
+        firstMouse = false;
+    }
+
+    // 1. Calculate the mouse’s offset since the last frame.
+    float xoffset = (float)xpos - mouseLastX;
+    float yoffset = mouseLastY - (float)ypos;
+    mouseLastX = (float)xpos;
+    mouseLastY = (float)ypos;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    // 2. Add the offset values to the camera’s yaw and pitch values.
+    yaw += xoffset;
+    pitch += yoffset;
+
+    // 3. Add some constraints to the minimum/maximum pitch values.
+    pitch = pitch > 89.0f ? 89.0f : pitch;
+    pitch = pitch < -89.0f ? -89.0f : pitch;
+
+    // 4. Calculate the direction vector.
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(direction);
+}
+
 int main() {
 
     // GLFW initialization:
@@ -91,6 +126,9 @@ int main() {
 
     // Registering callback functions
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    // Window input mode
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     /////////////////////////////////////////
 
@@ -319,6 +357,7 @@ int main() {
         lastFrame = currentFrame;
 
         // Camera
+        glfwSetCursorPosCallback(window, mouse_callback);
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         viewMatrix = view;
 
