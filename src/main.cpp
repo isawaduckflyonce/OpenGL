@@ -15,9 +15,11 @@
 
 
 // Version
-constexpr char Ver_num[] = "8.17";
-constexpr char Ver_name[] = "GLM";
+constexpr char VER_NUM[] = "9.8";
+constexpr char VER_NAME[] = "More 3D";
 
+const unsigned short int SCR_WIDTH = 800;
+const unsigned short int SCR_HEIGHT = 600;
 
 // Callback functions
 void framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
@@ -41,8 +43,8 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Creating window object:
-    const std::string windowTitle = std::string(Ver_num) + " - " + std::string(Ver_name);
-    GLFWwindow* window = glfwCreateWindow(800, 600, windowTitle.c_str(), nullptr, nullptr);
+    const std::string windowTitle = std::string(VER_NUM) + " - " + std::string(VER_NAME);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, windowTitle.c_str(), nullptr, nullptr);
     if (window == nullptr)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -67,16 +69,51 @@ int main() {
     /////////////////////////////////////////
 
     constexpr float vertices[] = {
-        // positions        // colors         // texture coords
-         0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
+        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
     };
 
     constexpr unsigned int indices[] = {
-        0, 1, 3,
-        1, 2, 3
+
     };
 
     /////////////////////////////////////////
@@ -96,13 +133,13 @@ int main() {
 
     // 4. Set vertex attribute pointers
     // First attribute (positions):
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
     // Second attribute (colors):
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    //glEnableVertexAttribArray(1);
     // Third attribute (texture coords):
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     // 5. Generate and bind EBO (Element Buffer Object)
@@ -124,7 +161,7 @@ int main() {
     stbi_set_flip_vertically_on_load(true); // So images don't render upside down
     int width[2], height[2], nrChannels[2];
     unsigned char *data[2] = {
-        stbi_load("src/textures/checkered_pavement_tiles/checkered_pavement_tiles_diff_4k.jpg", &width[0], &height[0], &nrChannels[0], 0),
+        stbi_load("src/textures/prototype_textures/red/texture_01.png", &width[0], &height[0], &nrChannels[0], 0),
         stbi_load("src/textures/sneaky_golem.jpg", &width[1], &height[1], &nrChannels[1], 0)
     };
 
@@ -165,7 +202,7 @@ int main() {
     // 9. Use the texture 2
     if (data[1])
     {
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // To fix skewing (idk)
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // To fix skewing
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width[1], height[1], 0, GL_RGB, GL_UNSIGNED_BYTE, data[1]);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
@@ -177,11 +214,34 @@ int main() {
     // 10. Free image 2's memory
     stbi_image_free(data[1]);
 
-    // Setup shacer
+    // Setup shader
     Shader customShader("src/shaders/default/default.vert", "src/shaders/default/default.frag");
     customShader.use();
     customShader.setInt("ourTexture1", 0);
     customShader.setInt("ourTexture2", 1);
+
+
+    // 1. Model matrix
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    // Model transformations:
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -2.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 2.0f));
+
+    // 2. View matrix
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    // World/Camera transformations:
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -10.0f));
+
+    // 3. Perspective / Ortho projection matrix
+    glm::mat4 perspMatrix = glm::mat4(1.0f);
+    perspMatrix = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 orthoMatrix = glm::mat4(1.0f);
+    orthoMatrix = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.0f, 100.0f);
+
+    // Getting uniforms' locations
+    unsigned int modelMatLoc = glGetUniformLocation(customShader.ID,"model");
+    unsigned int viewMatLoc = glGetUniformLocation(customShader.ID,"view");
+    unsigned int projMatLoc = glGetUniformLocation(customShader.ID,"projection");
 
     glBindVertexArray(VAO);
 
@@ -201,23 +261,21 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textures[1]);
 
-        customShader.setFloat("alpha", powf(sinf((float)glfwGetTime()/3.0f), 2.0f));
+        // Transform cube
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(-1.0f), glm::vec3(0.0, 1.0, 0.0));
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(0.1f), glm::vec3(1.0, 0.0, 0.0));
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(0.5f), glm::vec3(0.0, 0.0, 1.0));
 
-        //////////////////////////////////
 
-        // GLM:
-        glm::mat4 trans = glm::mat4(1.0f);
+        customShader.setFloat("alpha", pow(sinf(glfwGetTime()), 2));
 
-        trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-        trans = glm::rotate(trans, glm::radians(50 * (float)glfwGetTime()), glm::vec3(0.1f, 1.0f, 0.5f));
+        // Apply matrix transformations
+        glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+        glUniformMatrix4fv(viewMatLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+        glUniformMatrix4fv(projMatLoc, 1, GL_FALSE, glm::value_ptr(perspMatrix));
 
-        //////////////////////////////////
-
-        unsigned int transformLoc = glGetUniformLocation(customShader.ID,"transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        // Draw model
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Call events and swap buffer
         glfwSwapBuffers(window);

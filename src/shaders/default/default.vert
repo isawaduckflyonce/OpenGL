@@ -6,11 +6,13 @@ layout (location = 2) in vec2 aTexCoord; // texture coordinate has attribute pos
 out vec3 ourColor; // output a color to the fragment shader
 out vec2 TexCoord; // output texture coordinates
 
-uniform mat4 transform;
+uniform mat4 model; // Model matrix
+uniform mat4 view; // View matrix
+uniform mat4 projection; // Projection matrix
 
 void main()
 {
-    gl_Position = transform * vec4(aPos, 1.0);
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
     ourColor = aColor; // set ourColor to input color from the vertex data
     TexCoord = aTexCoord;
 }
