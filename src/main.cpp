@@ -15,8 +15,8 @@
 
 
 // Version
-constexpr char VER_NUM[] = "9.8.2";
-constexpr char VER_NAME[] = "More Cubes!";
+constexpr char VER_NUM[] = "10.2";
+constexpr char VER_NAME[] = "Look at";
 
 constexpr unsigned short int SCR_WIDTH = 800;
 constexpr unsigned short int SCR_HEIGHT = 600;
@@ -112,9 +112,7 @@ int main() {
         -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
     };
 
-    constexpr unsigned int indices[] = {
-
-    };
+    constexpr unsigned int indices[] = {};
 
     glm::vec3 cubePositions[] = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
@@ -227,12 +225,6 @@ int main() {
     // 10. Free image 2's memory
     stbi_image_free(data[1]);
 
-    // Setup shader
-    Shader customShader("src/shaders/default/default.vert", "src/shaders/default/default.frag");
-    customShader.use();
-    customShader.setInt("ourTexture1", 0);
-    customShader.setInt("ourTexture2", 1);
-
 
     // 1. Model matrix
     glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -246,15 +238,37 @@ int main() {
     viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
 
     // 3. Perspective / Ortho projection matrix
-    glm::mat4 perspMatrix = glm::mat4(1.0f);
-    perspMatrix = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    glm::mat4 orthoMatrix = glm::mat4(1.0f);
-    orthoMatrix = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.0f, 100.0f);
+    glm::mat4 perspMatrix = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    //glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.0f, 100.0f);
+
+
+    // Camera setup
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    // (local z axis) Point towards world origin
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+    // (local x axis) Right axis
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+    // (local y axis)
+    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
+    // "Look at" matrix
+    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    viewMatrix = view;
+
+
+    // Setup shader
+    Shader customShader("src/shaders/default/default.vert", "src/shaders/default/default.frag");
+    customShader.use();
+    customShader.setInt("ourTexture1", 0);
+    customShader.setInt("ourTexture2", 1);
 
     // Getting uniforms' locations
     unsigned int modelMatLoc = glGetUniformLocation(customShader.ID,"model");
     unsigned int viewMatLoc = glGetUniformLocation(customShader.ID,"view");
     unsigned int projMatLoc = glGetUniformLocation(customShader.ID,"projection");
+
 
     // Enable Z-Buffer
     glEnable(GL_DEPTH_TEST);
@@ -279,27 +293,37 @@ int main() {
         // Clear screen and Z-Buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+        // Camera movement
+        const float radius = 10.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ = cos(glfwGetTime()) * radius;
+        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
+        glm::vec3(0.0, 1.0, 0.0));
+        viewMatrix = view;
+
+
         // Apply matrix transformations
-        glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        glUniformMatrix4fv(viewMatLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-        glUniformMatrix4fv(projMatLoc, 1, GL_FALSE, glm::value_ptr(perspMatrix));
+        glUniformMatrix4fv((int)modelMatLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+        glUniformMatrix4fv((int)viewMatLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+        glUniformMatrix4fv((int)projMatLoc, 1, GL_FALSE, glm::value_ptr(perspMatrix));
 
 
-        for (unsigned int i = 0; i < sizeof(cubePositions) / sizeof(cubePositions[0]); i++) {
+        for (unsigned int i = 0; i < std::size(cubePositions); i++) {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
 
             // Transform cube
-            model = glm::rotate(model, glm::radians(20 * (float)glfwGetTime() + i * i), glm::vec3(0.0, 1.0, 0.0));
-            model = glm::rotate(model, glm::radians(20 * (float)glfwGetTime() + i * i), glm::vec3(1.0, 0.0, 0.0));
-            model = glm::rotate(model, glm::radians(20 * (float)glfwGetTime() + i * i), glm::vec3(0.0, 0.0, 1.0));
+            model = glm::rotate(model, glm::radians(20 * (float)glfwGetTime() + (float)(i * i)), glm::vec3(0.0, 1.0, 0.0));
+            model = glm::rotate(model, glm::radians(20 * (float)glfwGetTime() + (float)(i * i)), glm::vec3(1.0, 0.0, 0.0));
+            model = glm::rotate(model, glm::radians(20 * (float)glfwGetTime() + (float)(i * i)), glm::vec3(0.0, 0.0, 1.0));
 
             model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
 
             // Set shader uniforms
-            customShader.setFloat("alpha", pow(sinf(glfwGetTime() + 100 * i), 2));
+            customShader.setFloat("alpha", (float)pow(sinf((float)glfwGetTime() + 100.0f * (float)i), 2));
 
-            glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv((int)modelMatLoc, 1, GL_FALSE, glm::value_ptr(model));
 
             // Draw models
             glDrawArrays(GL_TRIANGLES, 0, 36);
