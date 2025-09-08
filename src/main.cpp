@@ -15,11 +15,17 @@
 
 
 // Version
-constexpr char VER_NUM[] = "10.2";
-constexpr char VER_NAME[] = "Look at";
+constexpr char VER_NUM[] = "10.3";
+constexpr char VER_NAME[] = "Walk around";
 
+// Window dimensions
 constexpr unsigned short int SCR_WIDTH = 800;
 constexpr unsigned short int SCR_HEIGHT = 600;
+
+// Camera
+glm::vec3 cameraPos;
+glm::vec3 cameraFront;
+glm::vec3 cameraUp;
 
 // Callback functions
 void framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
@@ -32,6 +38,22 @@ void processInput(GLFWwindow *window)
 {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    const float cameraSpeed = 0.05f; // adjust accordingly
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) *
+        cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) *
+        cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraUp;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        cameraPos += cameraSpeed * -cameraUp;
 }
 
 int main() {
@@ -243,18 +265,12 @@ int main() {
 
 
     // Camera setup
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-    // (local z axis) Point towards world origin
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-    // (local x axis) Right axis
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-    // (local y axis)
-    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+    cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+    cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
     // "Look at" matrix
-    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     viewMatrix = view;
 
 
@@ -293,13 +309,8 @@ int main() {
         // Clear screen and Z-Buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-        // Camera movement
-        const float radius = 10.0f;
-        float camX = sin(glfwGetTime()) * radius;
-        float camZ = cos(glfwGetTime()) * radius;
-        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
-        glm::vec3(0.0, 1.0, 0.0));
+        // Camera
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         viewMatrix = view;
 
 
