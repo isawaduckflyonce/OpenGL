@@ -18,8 +18,8 @@
 constexpr char VER_NUM[] = "9.8.2";
 constexpr char VER_NAME[] = "More Cubes!";
 
-const unsigned short int SCR_WIDTH = 800;
-const unsigned short int SCR_HEIGHT = 600;
+constexpr unsigned short int SCR_WIDTH = 800;
+constexpr unsigned short int SCR_HEIGHT = 600;
 
 // Callback functions
 void framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
@@ -238,12 +238,12 @@ int main() {
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     // Model transformations:
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -2.0f, 0.0f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 2.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
 
     // 2. View matrix
     glm::mat4 viewMatrix = glm::mat4(1.0f);
     // World/Camera transformations:
-    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -10.0f));
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
 
     // 3. Perspective / Ortho projection matrix
     glm::mat4 perspMatrix = glm::mat4(1.0f);
@@ -259,7 +259,14 @@ int main() {
     // Enable Z-Buffer
     glEnable(GL_DEPTH_TEST);
 
+    // Bind VAO
     glBindVertexArray(VAO);
+
+    // To draw, we use the shader program (VAO is already binded)
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
 
     // Render loop
     while(!glfwWindowShouldClose(window))
@@ -272,26 +279,31 @@ int main() {
         // Clear screen and Z-Buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // To draw, we use the shader program (VAO is already binded)
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-        // Transform cube
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(-1.0f), glm::vec3(0.0, 1.0, 0.0));
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(0.1f), glm::vec3(1.0, 0.0, 0.0));
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(0.5f), glm::vec3(0.0, 0.0, 1.0));
-
-        customShader.setFloat("alpha", pow(sinf(glfwGetTime()), 2));
-
         // Apply matrix transformations
         glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
         glUniformMatrix4fv(viewMatLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
         glUniformMatrix4fv(projMatLoc, 1, GL_FALSE, glm::value_ptr(perspMatrix));
 
-        // Draw model
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        for (unsigned int i = 0; i < sizeof(cubePositions) / sizeof(cubePositions[0]); i++) {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+
+            // Transform cube
+            model = glm::rotate(model, glm::radians(20 * (float)glfwGetTime() + i * i), glm::vec3(0.0, 1.0, 0.0));
+            model = glm::rotate(model, glm::radians(20 * (float)glfwGetTime() + i * i), glm::vec3(1.0, 0.0, 0.0));
+            model = glm::rotate(model, glm::radians(20 * (float)glfwGetTime() + i * i), glm::vec3(0.0, 0.0, 1.0));
+
+            model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+
+            // Set shader uniforms
+            customShader.setFloat("alpha", pow(sinf(glfwGetTime() + 100 * i), 2));
+
+            glUniformMatrix4fv(modelMatLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+            // Draw models
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         // Call events and swap buffer
         glfwSwapBuffers(window);
