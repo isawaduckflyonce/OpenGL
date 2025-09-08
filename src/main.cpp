@@ -15,8 +15,8 @@
 
 
 // Version
-constexpr char VER_NUM[] = "10.3";
-constexpr char VER_NAME[] = "Walk around";
+constexpr char VER_NUM[] = "10.4";
+constexpr char VER_NAME[] = "Movement speed";
 
 // Window dimensions
 constexpr unsigned short int SCR_WIDTH = 800;
@@ -26,6 +26,10 @@ constexpr unsigned short int SCR_HEIGHT = 600;
 glm::vec3 cameraPos;
 glm::vec3 cameraFront;
 glm::vec3 cameraUp;
+
+// Delta time
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 // Callback functions
 void framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
@@ -39,7 +43,7 @@ void processInput(GLFWwindow *window)
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    const float cameraSpeed = 0.05f; // adjust accordingly
+    const float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -308,6 +312,11 @@ int main() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         // Clear screen and Z-Buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Time
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
         // Camera
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
