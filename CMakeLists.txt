@@ -18,9 +18,10 @@ find_package(OpenGL REQUIRED)
 add_library(glad STATIC lib/glad/src/glad.c)
 target_include_directories(glad PUBLIC lib/glad/include)
 
-# Add your executable target, specifying the correct path to your source file.
-add_executable(OpenGL src/main.cpp
-        src/include/shader.h
+# Add your executable target, specifying only the source files.
+# CMake will handle header dependencies automatically.
+add_executable(OpenGL
+        src/main.cpp
         src/lib/shader.cpp
 )
 
@@ -34,15 +35,12 @@ target_link_libraries(OpenGL
 )
 
 # Set the include directories for your main executable
+# Only include the directories that contain header files needed for compilation.
 target_include_directories(OpenGL
         PRIVATE
         lib/glad/include
         ${glfw_SOURCE_DIR}/include
+        lib/glm
         lib/stb_image
-        src
         src/include
-        src/lib
-        src/shaders
-        src/shaders/default
-        src/textures
 )

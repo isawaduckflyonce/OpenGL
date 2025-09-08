@@ -1,14 +1,22 @@
+// Standard libraries
 #include <iostream>
+
+// Included libraries
 #include <glad/glad.h>
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+// Headers
 #include "shader.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 // Version
-constexpr char Ver_num[] = "7.7";
-constexpr char Ver_name[] = "Texture units";
+constexpr char Ver_num[] = "8.17";
+constexpr char Ver_name[] = "GLM";
 
 
 // Callback functions
@@ -25,6 +33,7 @@ void processInput(GLFWwindow *window)
 }
 
 int main() {
+
     // GLFW initialization:
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // Major OpenGL version
@@ -115,8 +124,8 @@ int main() {
     stbi_set_flip_vertically_on_load(true); // So images don't render upside down
     int width[2], height[2], nrChannels[2];
     unsigned char *data[2] = {
-        stbi_load("../src/textures/checkered_pavement_tiles/checkered_pavement_tiles_diff_4k.jpg", &width[0], &height[0], &nrChannels[0], 0),
-        stbi_load("../src/textures/sneaky_golem.jpg", &width[1], &height[1], &nrChannels[1], 0)
+        stbi_load("src/textures/checkered_pavement_tiles/checkered_pavement_tiles_diff_4k.jpg", &width[0], &height[0], &nrChannels[0], 0),
+        stbi_load("src/textures/sneaky_golem.jpg", &width[1], &height[1], &nrChannels[1], 0)
     };
 
     // 3. Activate and bind texture 1
@@ -169,7 +178,7 @@ int main() {
     stbi_image_free(data[1]);
 
     // Setup shacer
-    Shader customShader("../src/shaders/default/default.vert", "../src/shaders/default/default.frag");
+    Shader customShader("src/shaders/default/default.vert", "src/shaders/default/default.frag");
     customShader.use();
     customShader.setInt("ourTexture1", 0);
     customShader.setInt("ourTexture2", 1);
@@ -192,7 +201,21 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textures[1]);
 
-        customShader.setFloat("alpha", abs(sinf(glfwGetTime()/3.0f)));
+        customShader.setFloat("alpha", powf(sinf((float)glfwGetTime()/3.0f), 2.0f));
+
+        //////////////////////////////////
+
+        // GLM:
+        glm::mat4 trans = glm::mat4(1.0f);
+
+        trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+        trans = glm::rotate(trans, glm::radians(50 * (float)glfwGetTime()), glm::vec3(0.1f, 1.0f, 0.5f));
+
+        //////////////////////////////////
+
+        unsigned int transformLoc = glGetUniformLocation(customShader.ID,"transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
