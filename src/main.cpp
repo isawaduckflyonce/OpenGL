@@ -15,8 +15,8 @@
 
 
 // Version
-constexpr char VER_NUM[] = "9.8";
-constexpr char VER_NAME[] = "More 3D";
+constexpr char VER_NUM[] = "9.8.2";
+constexpr char VER_NAME[] = "More Cubes!";
 
 const unsigned short int SCR_WIDTH = 800;
 const unsigned short int SCR_HEIGHT = 600;
@@ -61,7 +61,7 @@ int main() {
     }
 
     // Default viewport initialization
-    glViewport(0, 0, 800, 600);
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
     // Registering callback functions
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -114,6 +114,19 @@ int main() {
 
     constexpr unsigned int indices[] = {
 
+    };
+
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f, 0.0f, 0.0f),
+        glm::vec3( 2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f, 2.0f, -2.5f),
+        glm::vec3( 1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f)
     };
 
     /////////////////////////////////////////
@@ -243,6 +256,9 @@ int main() {
     unsigned int viewMatLoc = glGetUniformLocation(customShader.ID,"view");
     unsigned int projMatLoc = glGetUniformLocation(customShader.ID,"projection");
 
+    // Enable Z-Buffer
+    glEnable(GL_DEPTH_TEST);
+
     glBindVertexArray(VAO);
 
     // Render loop
@@ -253,7 +269,8 @@ int main() {
 
         // Render commands
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // Clear screen and Z-Buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // To draw, we use the shader program (VAO is already binded)
         glActiveTexture(GL_TEXTURE0);
@@ -265,7 +282,6 @@ int main() {
         modelMatrix = glm::rotate(modelMatrix, glm::radians(-1.0f), glm::vec3(0.0, 1.0, 0.0));
         modelMatrix = glm::rotate(modelMatrix, glm::radians(0.1f), glm::vec3(1.0, 0.0, 0.0));
         modelMatrix = glm::rotate(modelMatrix, glm::radians(0.5f), glm::vec3(0.0, 0.0, 1.0));
-
 
         customShader.setFloat("alpha", pow(sinf(glfwGetTime()), 2));
 
