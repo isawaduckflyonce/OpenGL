@@ -15,8 +15,8 @@
 
 
 // Version
-constexpr char VER_NUM[] = "10.4";
-constexpr char VER_NAME[] = "Movement speed";
+constexpr char VER_NUM[] = "10.8";
+constexpr char VER_NAME[] = "Zoom";
 
 // Window dimensions
 constexpr unsigned short int SCR_WIDTH = 800;
@@ -30,6 +30,8 @@ float mouseLastX = SCR_WIDTH / 2.0f;
 float mouseLastY = SCR_HEIGHT / 2.0f;
 float sensitivity = 0.1f;
 bool firstMouse = true;
+float fov = 45.0f;
+float zoom = 0.0f;
 
 // Delta time
 float deltaTime = 0.0f;
@@ -94,6 +96,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     cameraFront = glm::normalize(direction);
 }
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    zoom -= (float)yoffset;
+    zoom = zoom > 45.0f ? 45.0f : zoom;
+    zoom = zoom < -45.0f ? -45.0f : zoom;
+}
+
 
 int main() {
 
@@ -359,6 +368,9 @@ int main() {
         // Camera
         glfwSetCursorPosCallback(window, mouse_callback);
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glfwSetScrollCallback(window, scroll_callback);
+        perspMatrix = glm::perspective(glm::radians(fov + zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
         viewMatrix = view;
 
 
