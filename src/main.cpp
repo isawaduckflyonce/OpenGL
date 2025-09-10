@@ -16,8 +16,8 @@
 
 
 // Version
-constexpr char VER_NUM[] = "12.1";
-constexpr char VER_NAME[] = "A lighting scene";
+constexpr char VER_NUM[] = "13.1";
+constexpr char VER_NAME[] = "Ambient lighting";
 
 // Window dimensions
 constexpr unsigned short int SCR_WIDTH = 800;
