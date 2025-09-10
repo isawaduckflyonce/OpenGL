@@ -16,8 +16,8 @@
 
 
 // Version
-constexpr char VER_NUM[] = "10.9";
-constexpr char VER_NAME[] = "Camera class";
+constexpr char VER_NUM[] = "12.1";
+constexpr char VER_NAME[] = "A lighting scene";
 
 // Window dimensions
 constexpr unsigned short int SCR_WIDTH = 800;
@@ -78,7 +78,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 }
 
 void scroll_callback(GLFWwindow* window, const double xoffset, const double yoffset) {
-    camera.Camera::ProcessMouseScroll(yoffset);
+    camera.Camera::ProcessMouseScroll((float)yoffset);
 }
 
 
@@ -166,8 +166,8 @@ int main() {
     constexpr unsigned int indices[] = {};
 
     glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f, 0.0f, 0.0f),
-        glm::vec3( 2.0f, 5.0f, -15.0f),
+        glm::vec3( 0.0f, -1.0f, 0.0f),
+        glm::vec3( 2.0f, 5.0f, -10.0f),
         glm::vec3(-1.5f, -2.2f, -2.5f),
         glm::vec3(-3.8f, -2.0f, -12.3f),
         glm::vec3( 2.4f, -0.4f, -3.5f),
@@ -180,10 +180,10 @@ int main() {
 
     /////////////////////////////////////////
 
-    // 1. Generate and bind the VAO (Vertex Array Object)
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    // 1. Generate and bind the default VAO (Vertex Array Object)
+    unsigned int defaultVAO;
+    glGenVertexArrays(1, &defaultVAO);
+    glBindVertexArray(defaultVAO);
 
     // 2. Generate and bind the VBO (Vertex Buffer Object)
     unsigned int VBO;
@@ -215,6 +215,27 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
+    // 1. Generate and bind the light source VAO
+    unsigned int lightSourceVAO;
+    glGenVertexArrays(1, &lightSourceVAO);
+    glBindVertexArray(lightSourceVAO);
+
+    // 2. Bind the VBO
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    // 3. Set vertex attribute pointers
+    // First attribute (positions):
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)nullptr);
+    glEnableVertexAttribArray(0);
+    // Second attribute (colors):
+    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    //glEnableVertexAttribArray(1);
+
+    // 4. Unbind the VAO, VBO and EBO
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
     // 1. Generate textures
     unsigned int textures[2];
     glGenTextures(2, textures);
@@ -223,7 +244,7 @@ int main() {
     stbi_set_flip_vertically_on_load(true); // So images don't render upside down
     int width[2], height[2], nrChannels[2];
     unsigned char *data[2] = {
-        stbi_load("src/textures/prototype_textures/red/texture_01.png", &width[0], &height[0], &nrChannels[0], 0),
+        stbi_load("src/textures/prototype_textures/dark/texture_01.png", &width[0], &height[0], &nrChannels[0], 0),
         stbi_load("src/textures/sneaky_golem.jpg", &width[1], &height[1], &nrChannels[1], 0)
     };
 
@@ -279,46 +300,71 @@ int main() {
 
     // 1. Model matrix
     glm::mat4 modelMatrix = glm::mat4(1.0f);
-    // Model transformations:
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -2.0f, 0.0f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
 
     // 2. View matrix
     glm::mat4 viewMatrix = glm::mat4(1.0f);
-    // World/Camera transformations:
-    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
 
     // 3. Perspective / Ortho projection matrix
     glm::mat4 perspMatrix = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     //glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, 0.0f, 100.0f);
 
-    // "Look at" matrix
-    viewMatrix = camera.Camera::GetViewMatrix();
 
-
-    // Setup shader
-    Shader customShader("src/shaders/default/default.vert", "src/shaders/default/default.frag");
-    customShader.use();
+    // Setup default shader
+    const Shader customShader(
+        "src/shaders/default/default.vert",
+        "src/shaders/default/default.frag"
+    );
+    customShader.use(); // First we use, then we set the values!
     customShader.setInt("ourTexture1", 0);
     customShader.setInt("ourTexture2", 1);
 
     // Getting uniforms' locations
-    unsigned int modelMatLoc = glGetUniformLocation(customShader.ID,"model");
-    unsigned int viewMatLoc = glGetUniformLocation(customShader.ID,"view");
-    unsigned int projMatLoc = glGetUniformLocation(customShader.ID,"projection");
+    const unsigned int modelMatLocCustom = glGetUniformLocation(customShader.ID,"model");
+    const unsigned int viewMatLocCustom = glGetUniformLocation(customShader.ID,"view");
+    const unsigned int projMatLocCustom = glGetUniformLocation(customShader.ID,"projection");
+
+
+    // Setup light source shader
+    const Shader lightSourceShader(
+        "src/shaders/light/lightSource.vert",
+        "src/shaders/light/lightSource.frag"
+    );
+    lightSourceShader.use();
+    lightSourceShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+    lightSourceShader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+
+    const unsigned int modelMatLocLighting = glGetUniformLocation(customShader.ID,"model");
+    const unsigned int viewMatLocLighting = glGetUniformLocation(customShader.ID,"view");
+    const unsigned int projMatLocLighting = glGetUniformLocation(customShader.ID,"projection");
+
+    // Setup lighting shader
+    const Shader lightingShader(
+        "src/shaders/light/lighting.vert",
+        "src/shaders/light/lighting.frag"
+    );
+    lightingShader.use();
+    lightingShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+    lightingShader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+
+    const unsigned int modelMatLocLightSource = glGetUniformLocation(customShader.ID,"model");
+    const unsigned int viewMatLocLightSource = glGetUniformLocation(customShader.ID,"view");
+    const unsigned int projMatLocLightSource = glGetUniformLocation(customShader.ID,"projection");
 
 
     // Enable Z-Buffer
     glEnable(GL_DEPTH_TEST);
 
     // Bind VAO
-    glBindVertexArray(VAO);
+    glBindVertexArray(defaultVAO);
 
     // To draw, we use the shader program (VAO is already binded)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+    // Light source
+    glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
 
     // Render loop
     while(!glfwWindowShouldClose(window))
@@ -332,7 +378,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Time
-        float currentFrame = glfwGetTime();
+        const float currentFrame = (float)glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -343,14 +389,32 @@ int main() {
         viewMatrix = camera.Camera::GetViewMatrix();
 
 
-        // Apply matrix transformations
-        glUniformMatrix4fv((int)modelMatLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        glUniformMatrix4fv((int)viewMatLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-        glUniformMatrix4fv((int)projMatLoc, 1, GL_FALSE, glm::value_ptr(perspMatrix));
+        // Render light
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos);
+        model = glm::scale(model, glm::vec3(0.2f));
 
+        lightSourceShader.use();
+        glBindVertexArray(lightSourceVAO);
+
+        glUniformMatrix4fv((int)modelMatLocLightSource, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv((int)viewMatLocLightSource, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+        glUniformMatrix4fv((int)projMatLocLightSource, 1, GL_FALSE, glm::value_ptr(perspMatrix));
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+        // Render objects
+        lightingShader.use();
+        glBindVertexArray(defaultVAO);
+
+        // Apply matrix transformations
+        glUniformMatrix4fv((int)modelMatLocCustom, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+        glUniformMatrix4fv((int)viewMatLocCustom, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+        glUniformMatrix4fv((int)projMatLocCustom, 1, GL_FALSE, glm::value_ptr(perspMatrix));
 
         for (unsigned int i = 0; i < std::size(cubePositions); i++) {
-            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
 
             // Transform cube
@@ -363,7 +427,7 @@ int main() {
             // Set shader uniforms
             customShader.setFloat("alpha", (float)pow(sinf((float)glfwGetTime() + 100.0f * (float)i), 2));
 
-            glUniformMatrix4fv((int)modelMatLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv((int)modelMatLocCustom, 1, GL_FALSE, glm::value_ptr(model));
 
             // Draw models
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -375,7 +439,7 @@ int main() {
     }
 
     // Clean up buffers
-    glDeleteVertexArrays(1, &VAO);
+    glDeleteVertexArrays(1, &defaultVAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     glDeleteTextures(2, textures);
